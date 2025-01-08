@@ -1,39 +1,46 @@
-import 'package:test/test.dart';
 import 'package:badword_guard/badword_guard.dart';
+import 'package:test/test.dart';
+
+import 'custom_bad_words.dart';
 
 void main() {
-  group('LanguageChecker', () {
-    late LanguageChecker checker;
+  void sharedTests(String description, LanguageChecker Function() createChecker) {
+    group(description, () {
+      late LanguageChecker checker;
 
-    setUp(() {
-      checker = LanguageChecker();
-    });
+      setUp(() {
+        checker = createChecker();
+      });
 
-    test('containsBadLanguage returns true for input with bad language', () {
-      expect(
-          checker.containsBadLanguage('This message contains a bad word: shit'),
-          isTrue);
-    });
+      test('containsBadLanguage returns true for input with bad language', () {
+        final input = checker.containsBadLanguage('This message contains a bad word: shit');
+        expect(input, isTrue);
+      });
 
-    test('containsBadLanguage returns false for input without bad language',
-        () {
-      expect(checker.containsBadLanguage('This message is clean'), isFalse);
-    });
+      test('containsBadLanguage returns false for input without bad language', () {
+        final input = checker.containsBadLanguage('This message is clean');
+        expect(input, isFalse);
+      });
 
-    test('filterBadWords replaces bad words with asterisks', () {
-      expect(checker.filterBadWords('This message contains a bad word: shit'),
-          equals('This message contains a bad word: ****'));
-    });
+      test('filterBadWords replaces bad words with asterisks', () {
+        final input = checker.filterBadWords('This message contains a bad word: shit');
+        expect(input, equals('This message contains a bad word: ****'));
+      });
 
-    test('filterBadWords does not replace words that contain bad words', () {
-      expect(
-          checker.filterBadWords('This message contains a bad word: shithole'),
-          equals('This message contains a bad word: shithole'));
+      test('filterBadWords does not modify input without bad words', () {
+        final input = checker.filterBadWords('This message is clean');
+        expect(input, equals('This message is clean'));
+      });
     });
+  }
 
-    test('filterBadWords does not modify input without bad words', () {
-      expect(checker.filterBadWords('This message is clean'),
-          equals('This message is clean'));
-    });
-  });
+  sharedTests(
+    'LanguageChecker (default configuration)',
+    () => LanguageChecker(),
+  );
+
+  sharedTests(
+    'LanguageChecker with custom bad words',
+    () => LanguageChecker(additionalWords: customBadWords),
+  );
 }

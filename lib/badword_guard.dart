@@ -4,13 +4,16 @@ import 'worddata.dart';
 
 class LanguageChecker {
   late final List<String> _badWords;
+  final List<String>? additionalWords;
 
-  LanguageChecker() {
+  LanguageChecker({this.additionalWords}) {
     _badWords = _decodeBadWords();
+    _badWords.addAll(additionalWords ?? []);
   }
 
   List<String> _decodeBadWords() {
     var decoded = utf8.decode(base64.decode(badwordlist));
+
     return decoded.split('\n');
   }
 
@@ -20,6 +23,7 @@ class LanguageChecker {
         return true;
       }
     }
+
     return false;
   }
 
@@ -28,7 +32,7 @@ class LanguageChecker {
 
     for (var badWord in _badWords) {
       result = result.replaceAllMapped(
-        RegExp(r'\b' + RegExp.escape(badWord) + r'\b', caseSensitive: false),
+        RegExp(RegExp.escape(badWord), caseSensitive: false),
         (match) => '*' * match.group(0)!.length,
       );
     }
@@ -37,8 +41,7 @@ class LanguageChecker {
   }
 
   bool _containsExactWord(String input, String word) {
-    final regex =
-        RegExp(r'\b' + RegExp.escape(word) + r'\b', caseSensitive: false);
+    final regex = RegExp(r'\b' + RegExp.escape(word) + r'\b', caseSensitive: false);
     return regex.hasMatch(input);
   }
 }
